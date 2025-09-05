@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     vim \
  && rm -rf /var/lib/apt/lists/*
 
-# ROS + sim + streaming deps (you already had these)
+# ROS + sim + streaming deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-humble-gazebo-ros-pkgs \
     ros-humble-nav2-bringup \
@@ -51,7 +51,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
  && rm -rf /var/lib/apt/lists/*
 
-# CUDA container hints (optional)
+# CUDA container hints 
 ENV NVIDIA_VISIBLE_DEVICES=all \
     NVIDIA_DRIVER_CAPABILITIES=all,compute,utility,graphics
 
