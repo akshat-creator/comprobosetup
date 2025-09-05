@@ -100,7 +100,8 @@ RUN bash -lc "source /opt/ros/humble/setup.bash && \
 RUN echo 'source /opt/ros/humble/setup.bash' >> /home/${USERNAME}/.bashrc \
  && echo '[ -f ~/ros2_ws/install/setup.bash ] && source ~/ros2_ws/install/setup.bash' >> /home/${USERNAME}/.bashrc
 
-ARG ROS_DOMAIN_ID=4
+# CHANGE DOMAIN ID
+ARG ROS_DOMAIN_ID=4 
 ENV ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
 RUN echo "export ROS_DOMAIN_ID=${ROS_DOMAIN_ID}" >> /home/${USERNAME}/.bashrc
 
