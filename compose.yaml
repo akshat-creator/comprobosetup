@@ -1,32 +1,39 @@
 services:
   ros2:
-    build:
-      context: .
-      args:
-        USERNAME: ros
-        USER_ID: 1000
-        GID: 1000
     image: redhotchili/olin-comprobo-ros2:humble
     container_name: ros2-dev
+    network_mode: "host"                 # enable host networking so DDS discovery & GUIs work smoothly
     working_dir: /home/ros/ros2_ws
     stdin_open: true
     tty: true
     init: true
     environment:
-      ROS_DOMAIN_ID: "0"
+      DISPLAY: ${DISPLAY}                # pass host X display
+      QT_X11_NO_MITSHM: "1"              # avoid MIT-SHM issues in containers
+      XAUTHORITY: /tmp/.docker.xauth     # point Qt to the mounted Xauthority
+      ROS_DOMAIN_ID: "0"                 # keep your chosen domain id
+      # RMW_IMPLEMENTATION: rmw_fastrtps_cpp   # (optional) set explicitly; ensure all shells match
+      # ROS_LOCALHOST_ONLY: "1"                # (optional) keep traffic on loopback only
     volumes:
-      - ./src:/home/ros/ros2_ws/src
-      - ros2_build:/home/ros/ros2_ws/build
-      - ros2_install:/home/ros/ros2_ws/install
-      - ros2_log:/home/ros/.ros
+      # Workspace
+      - ${HOME}/ros2_ws:/home/ros/ros2_ws
 
-      # Mount your host git/ssh read-only into a cache dir
+      # X11 sockets + Xauthority for GUI apps like rviz2/rqt
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${XAUTHORITY:-$HOME/.Xauthority}:/tmp/.docker.xauth:ro
+
+      # Git/SSH cache (optional)
       - ${HOME}/.gitconfig:/cache/git/.gitconfig:ro
       - ${HOME}/.ssh/id_ed25519:/cache/ssh/id_ed25519:ro
       - ${HOME}/.ssh/id_ed25519.pub:/cache/ssh/id_ed25519.pub:ro
       - ${HOME}/.ssh/known_hosts:/cache/ssh/known_hosts:ro
 
-    # Copy into writable ~/.ssh, set perms, then start a shell
+    devices:
+      - /dev/dri:/dev/dri                 # GPU/DRI (helps with OpenGL acceleration)
+
+    # Run as your host user to avoid Xauthority permission issues (Linux only)
+    user: "${UID}:${GID}"
+
     command: >
       bash -lc '
         mkdir -p ~/.ssh;
@@ -38,8 +45,3 @@ services:
         chmod 700 ~/.ssh; chmod 600 ~/.ssh/config;
         exec bash
       '
-
-volumes:
-  ros2_build:
-  ros2_install:
-  ros2_log:
